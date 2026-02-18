@@ -12,9 +12,9 @@ export function PageLayout({ children }: { children: React.ReactNode }) {
   const isChatPage = pathname?.startsWith("/messages/") && pathname !== "/messages";
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen md:h-screen md:overflow-hidden">
       <DesktopSidebar />
-      <div className="flex-1 min-w-0 overflow-auto">
+      <div className="flex-1 min-w-0 min-h-0 overflow-auto">
         <div className={CONTENT_CLASS}>
           {children}
         </div>

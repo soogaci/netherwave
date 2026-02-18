@@ -33,7 +33,7 @@ export default function RootLayout({
             <SavedMessagesProvider>
             <ToastProvider>
               <AppShell>
-                <div className="safe-area-padding pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+                <div className="safe-area-padding pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] md:h-screen md:overflow-hidden">
                   <PageLayout>{children}</PageLayout>
                 </div>
               </AppShell>
