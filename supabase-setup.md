@@ -25,8 +25,9 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=твой-anon-key
 ## 4. Supabase: таблицы (важно)
 
 1. **SQL Editor** в Supabase
-2. Создай новый запрос
-3. Скопируй и выполни содержимое файла `supabase/migrations/001_profiles_posts.sql`
+2. Выполни оба файла по порядку:
+   - `supabase/migrations/001_profiles_posts.sql`
+   - `supabase/migrations/002_chats_messages.sql`
 
 ## 5. Vercel: переменные окружения
 

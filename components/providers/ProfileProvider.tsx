@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useAuth } from "./AuthProvider";
-import { getProfile, upsertProfile, updateProfile as updateProfileDb, type Profile } from "@/lib/supabase/profiles";
+import { getProfile, upsertProfile, type Profile } from "@/lib/supabase/profiles";
 
 type ProfileContextType = {
   profile: Profile | null;
@@ -37,11 +37,17 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const updateProfile = React.useCallback(
     async (data: { display_name?: string; bio?: string; tags?: string[] }) => {
       if (!user) return { error: new Error("Не авторизован") };
-      const { error } = await updateProfileDb(user.id, data);
+      const username = profile?.username ?? user.user_metadata?.username ?? "user_" + user.id.slice(0, 8);
+      const { error } = await upsertProfile(user.id, {
+        username,
+        display_name: data.display_name ?? profile?.display_name ?? username,
+        bio: data.bio ?? profile?.bio ?? "",
+        tags: data.tags ?? profile?.tags ?? [],
+      });
       if (!error) await refresh();
       return { error };
     },
-    [user?.id, refresh]
+    [user?.id, profile, refresh]
   );
 
   const value = React.useMemo(

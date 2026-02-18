@@ -10,6 +10,8 @@ import { useSettings, type ChatSize } from "@/components/providers/SettingsProvi
 import { AvatarInitials } from "@/components/ui/avatar-initials";
 import { CHAT_MESSAGES, USER_PROFILES, SAVED_NOTES_KEY } from "@/lib/mock";
 import { useSavedMessages } from "@/components/providers/SavedMessagesProvider";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { getMessages, sendMessage as saveMessageToDb } from "@/lib/supabase/messages";
 import type { Msg } from "@/lib/types";
 
 const BUBBLE_STYLES: Record<ChatSize, string> = {
@@ -51,6 +53,7 @@ function useIsDesktop() {
 export default function ChatPage() {
     const params = useParams<{ id: string }>();
     const chatId = params?.id || "";
+    const { user } = useAuth();
     const { add: saveMessage, remove: unsaveMessage, has: isSaved, saved: savedRefs } = useSavedMessages();
     const isSavedChat = chatId === "saved";
     const { chatSize } = useSettings();
@@ -67,7 +70,7 @@ export default function ChatPage() {
             return msg ? [{ ...msg, chatId: r.chatId }] : [];
         });
     }, [isSavedChat, savedRefs]);
-    const savedNotes = React.useMemo(() => {
+    const savedNotesFromStorage = React.useMemo(() => {
         if (!isSavedChat || typeof window === "undefined") return [];
         try {
             const s = localStorage.getItem(SAVED_NOTES_KEY);
@@ -77,10 +80,31 @@ export default function ChatPage() {
         }
     }, [isSavedChat]);
     const [messages, setMessages] = React.useState<Msg[]>(data.messages);
+    const [dbMessages, setDbMessages] = React.useState<Msg[]>([]);
+    const [loadingMessages, setLoadingMessages] = React.useState(true);
+
     React.useEffect(() => {
-        if (isSavedChat) setMessages([...savedMessages, ...savedNotes]);
-        else setMessages(data.messages);
-    }, [isSavedChat, savedMessages, savedNotes, data.messages]);
+        let cancelled = false;
+        setLoadingMessages(true);
+        getMessages(chatId).then((msgs) => {
+            if (!cancelled) {
+                setDbMessages(msgs);
+                setLoadingMessages(false);
+            }
+        });
+        return () => { cancelled = true; };
+    }, [chatId]);
+
+    React.useEffect(() => {
+        if (isSavedChat) {
+            const notesFromDb = dbMessages.filter((m) => m.from === "me");
+            const notes = notesFromDb.length > 0 ? notesFromDb : savedNotesFromStorage;
+            setMessages([...savedMessages, ...notes]);
+        } else {
+            const fromDb = dbMessages.length > 0 ? dbMessages : data.messages;
+            setMessages(fromDb);
+        }
+    }, [isSavedChat, savedMessages, savedNotesFromStorage, dbMessages, data.messages]);
     const [text, setText] = React.useState("");
     const [reactionMsgId, setReactionMsgId] = React.useState<string | null>(null);
     const [reactions, setReactions] = React.useState<Record<string, string[]>>({});
@@ -105,13 +129,17 @@ export default function ChatPage() {
         } catch {}
     }
 
-    function send() {
+    async function send() {
         const t = text.trim();
         if (!t) return;
         const newMsg: Msg = { id: String(Date.now()), from: "me", text: t, time: "сейчас" };
+        if (user) {
+            const { error } = await saveMessageToDb(chatId, user.id, { text: t });
+            if (error) return;
+        }
         setMessages((prev) => {
             const next = [...prev, newMsg];
-            if (isSavedChat) persistNotes(next.slice(savedMessages.length));
+            if (isSavedChat && !user) persistNotes(next.slice(savedMessages.length));
             return next;
         });
         setText("");
@@ -120,18 +148,22 @@ export default function ChatPage() {
         scrollToBottom();
     }
 
-    function sendSticker(emoji: string) {
+    async function sendSticker(emoji: string) {
         const newMsg: Msg = { id: String(Date.now()), from: "me", text: "", sticker: emoji, time: "сейчас" };
+        if (user) {
+            const { error } = await saveMessageToDb(chatId, user.id, { sticker: emoji });
+            if (error) return;
+        }
         setMessages((prev) => {
             const next = [...prev, newMsg];
-            if (isSavedChat) persistNotes(next.slice(savedMessages.length));
+            if (isSavedChat && !user) persistNotes(next.slice(savedMessages.length));
             return next;
         });
         setStickerOpen(false);
         scrollToBottom();
     }
 
-    function sendAttachment(label: string) {
+    async function sendAttachment(label: string) {
         const names: Record<string, { name: string; size: string }> = {
             "Фото": { name: "photo_2026.jpg", size: "1.8 МБ" },
             "Файл": { name: "document.pdf", size: "340 КБ" },
@@ -139,9 +171,13 @@ export default function ChatPage() {
         };
         const att = names[label] ?? { name: "file.bin", size: "0 КБ" };
         const newMsg: Msg = { id: String(Date.now()), from: "me", text: "", attachment: att, time: "сейчас" };
+        if (user) {
+            const { error } = await saveMessageToDb(chatId, user.id, { attachment: att });
+            if (error) return;
+        }
         setMessages((prev) => {
             const next = [...prev, newMsg];
-            if (isSavedChat) persistNotes(next.slice(savedMessages.length));
+            if (isSavedChat && !user) persistNotes(next.slice(savedMessages.length));
             return next;
         });
         setAttachOpen(false);
