@@ -1,5 +1,4 @@
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/providers/ThemeProvider"
 import { ToastProvider } from "@/components/providers/ToastProvider"
@@ -9,11 +8,6 @@ import { PlayerProvider } from "@/components/providers/PlayerProvider"
 import { SavedMessagesProvider } from "@/components/providers/SavedMessagesProvider"
 import { AppShell } from "@/components/app/AppShell"
 import { PageLayout } from "@/components/app/PageLayout"
-
-const inter = Inter({
-  subsets: ["latin", "cyrillic"],
-  variable: "--font-inter",
-})
 
 export const metadata: Metadata = {
   title: "Netherwave",
@@ -25,7 +19,13 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ru" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <head>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap&subset=latin,cyrillic"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="font-sans antialiased">
         <ThemeProvider>
           <SettingsProvider>
             <FeedProvider>
