@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useAuth } from "./AuthProvider";
-import { getProfile, upsertProfile, type Profile } from "@/lib/supabase/profiles";
+import { getProfile, upsertProfile, updateProfile as updateProfileDb, type Profile } from "@/lib/supabase/profiles";
 
 type ProfileContextType = {
   profile: Profile | null;
@@ -37,7 +37,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const updateProfile = React.useCallback(
     async (data: { display_name?: string; bio?: string; tags?: string[] }) => {
       if (!user) return { error: new Error("Не авторизован") };
-      const { error } = await upsertProfile(user.id, data);
+      const { error } = await updateProfileDb(user.id, data);
       if (!error) await refresh();
       return { error };
     },
