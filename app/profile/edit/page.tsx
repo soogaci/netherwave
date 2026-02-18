@@ -8,9 +8,8 @@ import { Card } from "@/app/ui/card";
 import { Badge } from "@/app/ui/badge";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
 import { useToast } from "@/components/providers/ToastProvider";
-import { USER_PROFILES } from "@/lib/mock";
-
-const CURRENT_USER = "s1dead";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { useProfile } from "@/components/providers/ProfileProvider";
 
 const item = {
   hidden: { opacity: 0, y: 14 },
@@ -19,14 +18,33 @@ const item = {
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.05 } } };
 
 export default function EditProfilePage() {
-  const profile = USER_PROFILES[CURRENT_USER];
   const toast = useToast();
+  const { user } = useAuth();
+  const { profile, updateProfile } = useProfile();
 
-  const [displayName, setDisplayName] = React.useState(profile.displayName);
-  const [bio, setBio] = React.useState(profile.bio);
-  const [tags, setTags] = React.useState<string[]>([...profile.tags]);
+  const [displayName, setDisplayName] = React.useState("");
+  const [bio, setBio] = React.useState("");
+  const [tags, setTags] = React.useState<string[]>([]);
   const [newTag, setNewTag] = React.useState("");
   const [saved, setSaved] = React.useState(false);
+  const [saving, setSaving] = React.useState(false);
+
+  React.useEffect(() => {
+    if (profile) {
+      setDisplayName(profile.display_name || "");
+      setBio(profile.bio || "");
+      setTags(profile.tags || []);
+    }
+  }, [profile]);
+
+  if (!user) {
+    return (
+      <div className="py-12 text-center">
+        <p className="text-muted-foreground">Войди, чтобы редактировать профиль</p>
+        <Link href="/auth" className="mt-4 inline-block text-sm font-medium underline">Войти</Link>
+      </div>
+    );
+  }
 
   function addTag() {
     const t = newTag.trim();
@@ -39,7 +57,18 @@ export default function EditProfilePage() {
     setTags((prev) => prev.filter((t) => t !== tag));
   }
 
-  function handleSave() {
+  async function handleSave() {
+    setSaving(true);
+    const { error } = await updateProfile({
+      display_name: displayName.trim() || profile?.username || "Пользователь",
+      bio: bio.trim(),
+      tags,
+    });
+    setSaving(false);
+    if (error) {
+      toast?.(error.message);
+      return;
+    }
     setSaved(true);
     toast?.("Профиль сохранён");
     setTimeout(() => setSaved(false), 1500);
@@ -59,8 +88,9 @@ export default function EditProfilePage() {
         <motion.button
           type="button"
           onClick={handleSave}
+          disabled={saving}
           whileTap={{ scale: 0.9 }}
-          className="rounded-2xl bg-foreground text-background px-4 py-2 text-sm font-medium hover:opacity-90 transition inline-flex items-center gap-1.5"
+          className="rounded-2xl bg-foreground text-background px-4 py-2 text-sm font-medium hover:opacity-90 transition inline-flex items-center gap-1.5 disabled:opacity-50"
         >
           <AnimatePresence mode="wait" initial={false}>
             {saved ? (
@@ -83,17 +113,15 @@ export default function EditProfilePage() {
       </header>
 
       <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-5">
-        {/* Avatar */}
         <motion.div variants={item} className="flex justify-center">
           <div className="relative">
-            <AvatarInitials username={CURRENT_USER} size="lg" className="!h-20 !w-20 !text-2xl" />
+            <AvatarInitials username={profile?.username ?? "user"} size="lg" className="!h-20 !w-20 !text-2xl" />
             <div className="absolute -bottom-1 -right-1 grid h-7 w-7 place-items-center rounded-full bg-foreground text-background text-xs border-2 border-background">
               <Plus className="h-3.5 w-3.5" />
             </div>
           </div>
         </motion.div>
 
-        {/* Name */}
         <motion.div variants={item}>
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5 block px-1">
             Имя
@@ -108,7 +136,6 @@ export default function EditProfilePage() {
           </Card>
         </motion.div>
 
-        {/* Bio */}
         <motion.div variants={item}>
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5 block px-1">
             О себе
@@ -126,7 +153,6 @@ export default function EditProfilePage() {
           <div className="text-right text-[10px] text-muted-foreground mt-1 px-1">{bio.length}/200</div>
         </motion.div>
 
-        {/* Tags */}
         <motion.div variants={item}>
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5 block px-1">
             Теги интересов
@@ -176,13 +202,12 @@ export default function EditProfilePage() {
           </div>
         </motion.div>
 
-        {/* Username (read-only) */}
         <motion.div variants={item}>
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5 block px-1">
             Юзернейм
           </label>
           <Card className="rounded-2xl border-0 bg-card p-0 gap-0 shadow-none">
-            <div className="px-4 py-3 text-sm text-muted-foreground">@{CURRENT_USER}</div>
+            <div className="px-4 py-3 text-sm text-muted-foreground">@{profile?.username ?? "—"}</div>
           </Card>
           <div className="text-[10px] text-muted-foreground mt-1 px-1">Изменить нельзя</div>
         </motion.div>

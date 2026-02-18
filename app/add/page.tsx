@@ -39,25 +39,33 @@ export default function AddPage() {
     setTags(tags.filter((x) => x !== t));
   }
 
-  function publishPost() {
+  async function publishPost() {
     if (postType === "people") {
       if (!postText.trim()) {
         toast?.("Напиши текст поста");
         return;
       }
-      addPeoplePost({ text: postText.trim(), tags, hasPhoto: false });
+      const { error } = await addPeoplePost({ text: postText.trim(), tags, hasPhoto: false });
+      if (error) {
+        toast?.(error.message);
+        return;
+      }
     } else {
       if (!track.trim() || !artist.trim()) {
         toast?.("Укажи трек и исполнителя");
         return;
       }
-      addMusicPost({
+      const { error } = await addMusicPost({
         track: track.trim(),
         artist: artist.trim(),
         mood: mood.trim() || "—",
         tags,
         coverColor: "oklch(0.5 0.18 280)",
       });
+      if (error) {
+        toast?.(error.message);
+        return;
+      }
     }
 
     setPublishing(true);

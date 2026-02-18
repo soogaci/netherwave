@@ -8,10 +8,10 @@ import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
 import { NetherwaveLogo } from "@/components/ui/NetherwaveLogo";
-import { USER_PROFILES, PEOPLE } from "@/lib/mock";
 import { PeopleCard } from "@/components/feed/PeopleCard";
-
-const CURRENT_USER = "s1dead";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { useProfile } from "@/components/providers/ProfileProvider";
+import { useFeed } from "@/components/providers/FeedProvider";
 
 const stagger = {
   hidden: {},
@@ -23,8 +23,39 @@ const fadeUp = {
 };
 
 export default function ProfilePage() {
-  const profile = USER_PROFILES[CURRENT_USER];
-  const myPosts = PEOPLE.filter((p) => p.user === CURRENT_USER);
+  const { user } = useAuth();
+  const { profile, loading } = useProfile();
+  const { feed } = useFeed();
+  const myPosts = feed.filter((p) => p.user === profile?.username);
+
+  if (!user) {
+    return (
+      <div className="py-12 text-center">
+        <p className="text-muted-foreground">Войди, чтобы видеть профиль</p>
+        <Link href="/auth" className="mt-4 inline-block text-sm font-medium text-foreground underline">
+          Войти
+        </Link>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="py-12 text-center">
+        <div className="animate-pulse text-muted-foreground">Загрузка...</div>
+      </div>
+    );
+  }
+
+  const p = profile ?? {
+    username: user.user_metadata?.username ?? "user",
+    display_name: user.user_metadata?.username ?? "Пользователь",
+    bio: "",
+    tags: [],
+    followers: 0,
+    following: 0,
+  };
+  const postCount = myPosts.length;
 
   return (
     <div>
@@ -49,22 +80,22 @@ export default function ProfilePage() {
         <motion.div variants={fadeUp}>
           <Card className="rounded-3xl border-0 bg-card p-5 gap-0 shadow-none">
             <div className="flex items-start gap-4">
-              <AvatarInitials username={CURRENT_USER} size="lg" />
+              <AvatarInitials username={p.username} size="lg" />
               <div className="min-w-0 flex-1">
-                <div className="text-base font-semibold">{profile.displayName}</div>
-                <div className="text-sm text-muted-foreground">@{profile.username}</div>
-                <div className="mt-2 text-sm text-foreground/90">{profile.bio}</div>
+                <div className="text-base font-semibold">{p.display_name}</div>
+                <div className="text-sm text-muted-foreground">@{p.username}</div>
+                <div className="mt-2 text-sm text-foreground/90">{p.bio || "—"}</div>
               </div>
             </div>
 
             <div className="mt-4 flex gap-6 text-center text-sm">
-              <div><span className="font-semibold">{profile.posts}</span> <span className="text-muted-foreground">постов</span></div>
-              <div><span className="font-semibold">{profile.followers}</span> <span className="text-muted-foreground">подписчиков</span></div>
-              <div><span className="font-semibold">{profile.following}</span> <span className="text-muted-foreground">подписок</span></div>
+              <div><span className="font-semibold">{postCount}</span> <span className="text-muted-foreground">постов</span></div>
+              <div><span className="font-semibold">{p.followers}</span> <span className="text-muted-foreground">подписчиков</span></div>
+              <div><span className="font-semibold">{p.following}</span> <span className="text-muted-foreground">подписок</span></div>
             </div>
 
             <div className="mt-4 flex flex-wrap gap-2">
-              {profile.tags.map((t) => (
+              {(p.tags || []).map((t: string) => (
                 <Badge key={t} className="rounded-full" variant="secondary">{t}</Badge>
               ))}
             </div>
@@ -85,7 +116,7 @@ export default function ProfilePage() {
           <div className="text-sm font-medium text-muted-foreground mb-3">Мои посты</div>
           <div className="space-y-3">
             {myPosts.length ? (
-              myPosts.map((p, i) => <PeopleCard key={p.id} item={p} index={i} />)
+              myPosts.map((post, i) => <PeopleCard key={post.id} item={post} index={i} />)
             ) : (
               <Card className="rounded-2xl border-0 bg-card p-5 gap-0 shadow-none">
                 <div className="text-sm text-muted-foreground">Пока нет постов</div>

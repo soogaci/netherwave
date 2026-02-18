@@ -98,7 +98,7 @@ function matchMusicQuery(item: MusicPost, q: string) {
 function HomeContent() {
   const searchParams = useSearchParams();
   const tagFromUrl = searchParams.get("tag");
-  const { feed, subs, musicFeed } = useFeed();
+  const { feed, subs, musicFeed, loading: feedLoading, refresh } = useFeed();
   const [tabIndex, setTabIndex] = React.useState(0);
   const [searchOpen, setSearchOpen] = React.useState(!!tagFromUrl);
   const [searchQuery, setSearchQuery] = React.useState(tagFromUrl ?? "");
@@ -125,9 +125,10 @@ function HomeContent() {
     return musicFeed.filter((m) => matchMusicQuery(m, searchQuery));
   }, [musicFeed, searchQuery]);
 
-  function handleRefresh() {
+  async function handleRefresh() {
     setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 800);
+    await refresh();
+    setRefreshing(false);
   }
 
   const feedPanel = (
@@ -148,7 +149,7 @@ function HomeContent() {
         </button>
       </div>
       <section className="space-y-4">
-        {initialLoading || refreshing ? (
+        {initialLoading || refreshing || feedLoading ? (
           <>
             <FeedCardSkeleton />
             <FeedCardSkeleton />
@@ -179,7 +180,7 @@ function HomeContent() {
         </div>
       </div>
       <section className="space-y-4">
-        {initialLoading ? (
+        {initialLoading || feedLoading ? (
           <>
             <FeedCardSkeleton />
             <FeedCardSkeleton />

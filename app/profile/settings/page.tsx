@@ -15,9 +15,11 @@ import {
   Sparkles,
   RotateCcw,
   Check,
+  LogOut,
 } from "lucide-react";
 import { Card } from "@/app/ui/card";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import { useAuth } from "@/components/providers/AuthProvider";
 import {
   useSettings,
   type ChatSize,
@@ -161,6 +163,7 @@ const ACCENT_OPTIONS: { value: AccentColor; color: string; label: string }[] = [
 export default function SettingsPage() {
   const { theme, toggle } = useTheme();
   const s = useSettings();
+  const { user, signOut } = useAuth();
 
   return (
     <div>
@@ -283,7 +286,7 @@ export default function SettingsPage() {
           <Row icon={<Sparkles className="h-4 w-4" />} label="Анимации" desc="Плавные переходы в интерфейсе">
             <Toggle on={s.animationsEnabled} onChange={(v) => s.set("animationsEnabled", v)} />
           </Row>
-          <Row icon={<RotateCcw className="h-4 w-4" />} label="Сбросить настройки" desc="Вернуть всё по умолчанию" last>
+          <Row icon={<RotateCcw className="h-4 w-4" />} label="Сбросить настройки" desc="Вернуть всё по умолчанию" last={!user}>
             <motion.button
               type="button"
               onClick={s.reset}
@@ -295,7 +298,20 @@ export default function SettingsPage() {
               <RotateCcw className="h-4 w-4" />
             </motion.button>
           </Row>
+          {user && (
+            <Row icon={<LogOut className="h-4 w-4" />} label="Выйти" desc={user.email ?? ""} last>
+              <motion.button
+                type="button"
+                onClick={() => signOut()}
+                whileTap={{ scale: 0.95 }}
+                className="rounded-xl px-4 py-2 text-sm font-medium bg-destructive/10 text-destructive hover:bg-destructive/20 transition"
+              >
+                Выйти
+              </motion.button>
+            </Row>
+          )}
         </Section>
+
 
         {/* Preview */}
         <motion.div variants={item}>

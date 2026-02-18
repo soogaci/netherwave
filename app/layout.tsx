@@ -1,13 +1,14 @@
 import type { Metadata } from "next"
 import "./globals.css"
 import { ThemeProvider } from "@/components/providers/ThemeProvider"
+import { AuthProvider } from "@/components/providers/AuthProvider"
+import { ProfileProvider } from "@/components/providers/ProfileProvider"
 import { ToastProvider } from "@/components/providers/ToastProvider"
 import { SettingsProvider } from "@/components/providers/SettingsProvider"
 import { FeedProvider } from "@/components/providers/FeedProvider"
 import { PlayerProvider } from "@/components/providers/PlayerProvider"
 import { SavedMessagesProvider } from "@/components/providers/SavedMessagesProvider"
-import { AppShell } from "@/components/app/AppShell"
-import { PageLayout } from "@/components/app/PageLayout"
+import { LayoutContent } from "@/components/app/LayoutContent"
 
 export const metadata: Metadata = {
   title: "Netherwave",
@@ -27,21 +28,21 @@ export default function RootLayout({
       </head>
       <body className="font-sans antialiased">
         <ThemeProvider>
+          <AuthProvider>
+          <ProfileProvider>
           <SettingsProvider>
             <FeedProvider>
             <PlayerProvider>
             <SavedMessagesProvider>
             <ToastProvider>
-              <AppShell>
-                <div className="safe-area-padding pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] md:h-screen md:overflow-hidden">
-                  <PageLayout>{children}</PageLayout>
-                </div>
-              </AppShell>
+              <LayoutContent>{children}</LayoutContent>
             </ToastProvider>
             </SavedMessagesProvider>
             </PlayerProvider>
             </FeedProvider>
           </SettingsProvider>
+          </ProfileProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
