@@ -1,0 +1,13 @@
+<launch>
+  <param name="/use_sim_time" value="true"/>
+
+  <!-- Stage: карта, /scan, /odom, TF odom->base_link -->
+  <node pkg="stage_ros" type="stageros" name="stageros"
+        args="$(find stage_ros)/worlds/willow-four-erratics.world"/>
+
+  <!-- Адаптер: /odom -> /Odometry и TF под твои фреймы -->
+  <node pkg="nav_sim" type="stage_sim_adapter.py" name="stage_sim_adapter"/>
+
+  <!-- Подставь сюда свой launch move_base (sentry_nav и т.д.). Пример: -->
+  <!-- <include file="$(find sentry_nav)/launch/sentry_movebase.launch"/> -->
+</launch>
