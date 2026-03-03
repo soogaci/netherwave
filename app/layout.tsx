@@ -28,6 +28,10 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0f" },
+    { media: "(prefers-color-scheme: light)", color: "#fafafa" },
+  ],
 }
 
 export default function RootLayout({
@@ -38,7 +42,7 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){var t=localStorage.getItem("feelreal-theme");if(t&&["default","light","mint","warm","neon","glass"].indexOf(t)!==-1){document.documentElement.setAttribute("data-theme",t);document.documentElement.classList.toggle("dark",["default","mint","warm","neon"].indexOf(t)!==-1);}})();`,
+            __html: `(function(){try{var t=localStorage.getItem("feelreal-theme");if(t&&["default","light","mint","warm","neon","glass"].indexOf(t)!==-1){document.documentElement.setAttribute("data-theme",t);document.documentElement.classList.toggle("dark",["default","mint","warm","neon"].indexOf(t)!==-1);}if(/OS[ _]26/.test(navigator.userAgent)){document.documentElement.setAttribute("data-ios26","");}if(navigator.standalone===true){document.documentElement.setAttribute("data-standalone","");}}catch(e){}})();`,
           }}
         />
         <link rel="preconnect" href="https://fonts.googleapis.com" />

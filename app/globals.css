@@ -437,27 +437,102 @@ html[data-theme="glass"] body {
   }
 }
 
+/* App shell & tab-bar (iOS PWA safe-area fix) */
 :root {
   --radius: 1.25rem;
-  /* Нижний отступ: полный safe-area (на iPhone ~34px). Не ограничиваем — иначе под меню «заплатка». */
-  --dock-inset-bottom: env(safe-area-inset-bottom, 0px);
-  /* Высота таб-бара по iOS HIG: 49pt контента (как в Instagram) */
-  --dock-content-height: 49px;
-  /* Полная высота дока = контент + safe-area (для расчётов на iOS) */
-  --dock-total-height: calc(var(--dock-content-height) + var(--dock-inset-bottom));
+  --tab-bar-height: 49px;
+  --sab-override: env(safe-area-inset-bottom, 34px);
 }
 
 html {
-  height: 100%;
-  /* iOS: используем динамическую высоту видимой области, чтобы не было двойного скролла и «зума» */
-  min-height: 100dvh;
   -webkit-text-size-adjust: 100%;
 }
+
 body {
-  height: 100%;
-  min-height: 100dvh;
-  min-height: -webkit-fill-available;
+  margin: 0;
+  padding: 0;
+  background: var(--background);
+}
+
+.app-shell {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--background);
+  isolation: isolate;
+}
+
+.app-content {
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow-y: auto;
   overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+}
+
+.tab-bar {
+  flex-shrink: 0;
+  position: relative;
+  width: 100%;
+  height: var(--tab-bar-height);
+  padding-bottom: var(--sab-override);
+  box-sizing: content-box;
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  background: var(--background);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  z-index: 10;
+}
+
+.tab-bar__inner {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+  width: 100%;
+  max-width: 28rem;
+  height: var(--tab-bar-height);
+}
+
+@media (min-width: 768px) {
+  .tab-bar {
+    display: none;
+  }
+}
+
+.mini-player-wrapper {
+  position: fixed;
+  bottom: calc(var(--tab-bar-height) + var(--sab-override) + 8px);
+  left: 0;
+  right: 0;
+  z-index: 40;
+}
+
+.toast-wrapper {
+  position: fixed;
+  bottom: calc(var(--tab-bar-height) + var(--sab-override) + 70px);
+  left: 0;
+  right: 0;
+  z-index: 60;
+}
+
+@media (min-width: 768px) {
+  .app-shell {
+    position: relative;
+    height: 100vh;
+    min-height: 100vh;
+  }
 }
 
 body {
@@ -507,9 +582,9 @@ h1, h2, h3, h4, h5, h6,
   touch-action: pan-x;
 }
 
-/* Нижний отступ контента = полная высота дока (49px + safe-area) + буфер. На iPhone safe-area ~34px. */
-.content-pb-dock {
-  padding-bottom: calc(var(--dock-total-height) + 12px);
+/* iOS 26: при необходимости переопределить safe-area в компонентах */
+[data-ios26] {
+  --sab: 34px;
 }
 
 /* Подсветка сообщения при переходе по ответу в чате — лёгкое белое свечение на 1 сек */

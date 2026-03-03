@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 export function SplashScreen() {
   return (
     <motion.div
-      className="fixed inset-0 z-[300] flex flex-col items-center justify-center gap-6 bg-background"
+      className="fixed inset-0 z-[10100] flex flex-col items-center justify-center gap-6 bg-background min-h-[100vh] min-h-[100dvh]"
       initial={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.35, ease: "easeOut" }}

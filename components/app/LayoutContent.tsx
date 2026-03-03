@@ -10,6 +10,7 @@ import { BackgroundRefresh } from "./BackgroundRefresh";
 export function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAuthPage = pathname?.startsWith("/auth");
+  const isChatPage = pathname?.startsWith("/messages/") && pathname !== "/messages";
 
   if (isAuthPage) {
     return <>{children}</>;
@@ -18,8 +19,8 @@ export function LayoutContent({ children }: { children: React.ReactNode }) {
   return (
     <RefreshProvider>
       <AppShell>
-        <div className="min-h-[100dvh] h-[100dvh] max-h-[100dvh] md:h-screen md:max-h-none md:min-h-0 overflow-hidden flex flex-col bg-background">
-          <AppReadyProvider>
+        <div className="app-shell">
+          <AppReadyProvider showBottomBar={!isChatPage}>
             <BackgroundRefresh />
             <PageLayout>{children}</PageLayout>
           </AppReadyProvider>

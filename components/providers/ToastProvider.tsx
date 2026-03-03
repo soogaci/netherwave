@@ -29,7 +29,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="fixed bottom-28 left-4 right-4 z-[100] mx-auto max-w-md rounded-2xl bg-foreground text-background px-4 py-3 text-center text-sm shadow-lg"
+            className="toast-wrapper left-4 right-4 mx-auto max-w-md rounded-2xl bg-foreground text-background px-4 py-3 text-center text-sm shadow-lg"
             role="status"
             aria-live="polite"
           >

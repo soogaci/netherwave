@@ -12,7 +12,7 @@ export default function MiniPlayer() {
   const { current, playing, progress, togglePlay, skip, hide } = player;
 
   return (
-    <div className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] left-0 right-0 z-40 mx-auto max-w-md px-2 md:hidden">
+    <div className="mini-player-wrapper mx-auto max-w-md px-2 md:hidden">
       <AnimatePresence>
         <motion.div
           key={current.track}
